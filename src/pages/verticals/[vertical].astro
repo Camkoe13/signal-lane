@@ -1,9 +1,133 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
-const all = await getCollection('digests');
-const definitions = { 'anomaly-detection': ['Industrial Visual Anomaly Detection','Research on real-time defect detection and edge deployment.'], 'agentic-security':['Agentic LLM / Tool-Use Security','Security research covering prompt injection and tool-use vulnerabilities.'], 'edge-inference':['On-Device / Edge LLM Inference','Advances in quantization, federated learning, and private edge AI.'] };
-export function getStaticPaths() { return Object.keys(definitions).map(vertical => ({ params:{vertical}, props:{vertical} })); }
-const { vertical } = Astro.props; const [title, description] = definitions[vertical]; const digests = all.filter(d => d.data.vertical === vertical).sort((a,b)=>b.data.date.valueOf()-a.data.date.valueOf());
+
+export async function getStaticPaths() {
+  const allDigests = await getCollection('digests');
+  
+  const verticals = [
+    {
+      slug: 'anomaly-detection',
+      title: 'Industrial Visual Anomaly Detection',
+      description: 'Research on real-time defect detection, foundation models for quality control, and edge deployment strategies for manufacturing environments.',
+    },
+    {
+      slug: 'agentic-security',
+      title: 'Agentic LLM / Tool-Use Security',
+      description: 'Security research covering prompt injection, sandbox escapes, tool-use vulnerabilities, and defense patterns for LLM agents.',
+    },
+    {
+      slug: 'edge-inference',
+      title: 'On-Device / Edge LLM Inference',
+      description: 'Advances in quantization, federated learning, privacy-preserving methods, and running capable models on constrained hardware.',
+    },
+  ];
+
+  return verticals.map(vertical => ({
+    params: { vertical: vertical.slug },
+    props: {
+      vertical,
+      digests: allDigests
+        .filter(d => d.data.vertical === vertical.slug)
+        .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+    },
+  }));
+}
+
+const { vertical, digests } = Astro.props;
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
 ---
-<BaseLayout title={title}><h1>{title}</h1><p>{description}</p>{digests.map(d => <article class="card" style="margin:1rem 0"><h2><a href={`/digests/${d.id}`}>{d.data.title}</a></h2><time>{d.data.date.toLocaleDateString()}</time><p>{d.data.summary}</p><a href={`/digests/${d.id}`}>Read full digest →</a></article>)}</BaseLayout>
+
+<BaseLayout title={vertical.title}>
+  <div class="vertical-header">
+    <h1>{vertical.title}</h1>
+    <p class="vertical-description">{vertical.description}</p>
+  </div>
+
+  <div class="digests-list">
+    {digests.map(digest => (
+      <article class="digest-preview">
+        <h2>
+          <a href={`/digests/${digest.id}`}>{digest.data.title}</a>
+        </h2>
+        <time datetime={digest.data.date.toISOString()}>{formatDate(digest.data.date)}</time>
+        <p class="summary">{digest.data.summary}</p>
+        <a href={`/digests/${digest.id}`} class="read-more">Read full digest →</a>
+      </article>
+    ))}
+
+    {digests.length === 0 && (
+      <p style="color: var(--color-text-muted); font-style: italic;">
+        No digests yet in this vertical. Check back soon.
+      </p>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .vertical-header {
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .vertical-header h1 {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .vertical-description {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+
+  .digests-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+  }
+
+  .digest-preview {
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .digest-preview:last-child {
+    border-bottom: none;
+  }
+
+  .digest-preview h2 {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .digest-preview h2 a {
+    color: var(--color-text);
+  }
+
+  .digest-preview h2 a:hover {
+    color: var(--color-accent);
+  }
+
+  .digest-preview time {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .digest-preview .summary {
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.6;
+  }
+
+  .read-more {
+    display: inline-block;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+</style>
