@@ -1,7 +1,58 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, render } from 'astro:content';
-export async function getStaticPaths() { const all = await getCollection('digests'); return all.map(d => ({ params:{slug:d.id}, props:{digest:d} })); }
-const { digest } = Astro.props; const { Content } = await render(digest);
+
+export async function getStaticPaths() {
+  const all = await getCollection('digests');
+  return all.map(d => ({ params: { slug: d.id }, props: { digest: d } }));
+}
+
+const { digest } = Astro.props;
+const { Content } = await render(digest);
+const base = import.meta.env.BASE_URL;
 ---
-<BaseLayout title={digest.data.title} description={digest.data.summary}><article><p><a href="/">Home</a> / {digest.data.vertical}</p><h1>{digest.data.title}</h1><time>{digest.data.date.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</time><section class="card" style="margin:2rem 0"><h2>What Matters</h2><p>{digest.data.summary}</p></section><h2>Key Takeaways</h2><ul>{digest.data.takeaways.map(t => <li>{t}</li>)}</ul><div><Content /></div><h2>Sources</h2><ul>{digest.data.sources.map(s => <li>[{s.type}] <a href={s.url}>{s.title}</a></li>)}</ul></article></BaseLayout>
+
+<BaseLayout title={digest.data.title} description={digest.data.summary}>
+  <article>
+    <p><a href={base}>Home</a> / <a href={`${base}verticals/${digest.data.vertical}`}>{digest.data.vertical}</a></p>
+    <h1>{digest.data.title}</h1>
+    <time>{digest.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+
+    <section class="card" style="margin: 2rem 0;">
+      <h2>What Matters</h2>
+      <p>{digest.data.summary}</p>
+    </section>
+
+    <h2>Key Takeaways</h2>
+    <ul>
+      {digest.data.takeaways.map(t => <li>{t}</li>)}
+    </ul>
+
+    <div class="body">
+      <Content />
+    </div>
+
+    <div class="ad-slot" aria-hidden="true">Ad</div>
+
+    <h2>Sources</h2>
+    <ul>
+      {digest.data.sources.map(s => (
+        <li>[{s.type}] <a href={s.url}>{s.title}</a></li>
+      ))}
+    </ul>
+  </article>
+</BaseLayout>
+
+<style>
+  .ad-slot {
+    margin: 2rem 0;
+    padding: 2.5rem;
+    background: #151b23;
+    border: 1px dashed var(--color-border);
+    border-radius: 8px;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+  .body { margin: 2rem 0; }
+</style>

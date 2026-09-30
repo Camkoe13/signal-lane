@@ -1,7 +1,81 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
-const digests = await getCollection('digests');
-const verticals = [{slug:'anomaly-detection',title:'Industrial Visual Anomaly Detection',description:'Real-time defect detection and edge deployment for manufacturing quality control.'},{slug:'agentic-security',title:'Agentic LLM / Tool-Use Security',description:'Prompt injection defenses, sandbox escapes, and security patterns for LLM agents.'},{slug:'edge-inference',title:'On-Device / Edge LLM Inference',description:'Quantization, federated learning, and private AI running on constrained hardware.'}];
+
+const allDigests = await getCollection('digests');
+const base = import.meta.env.BASE_URL;
+
+const verticals = [
+  {
+    slug: 'anomaly-detection',
+    title: 'Industrial Visual Anomaly Detection',
+    description: 'Real-time defect detection, foundation models, and edge deployment for manufacturing quality control.',
+    count: allDigests.filter(d => d.data.vertical === 'anomaly-detection').length,
+  },
+  {
+    slug: 'agentic-security',
+    title: 'Agentic LLM / Tool-Use Security',
+    description: 'Prompt injection defenses, sandbox escapes, and security patterns for LLM agents with tool access.',
+    count: allDigests.filter(d => d.data.vertical === 'agentic-security').length,
+  },
+  {
+    slug: 'edge-inference',
+    title: 'On-Device / Edge LLM Inference',
+    description: 'Quantization, federated learning, and private AI that runs locally on smartphones and edge hardware.',
+    count: allDigests.filter(d => d.data.vertical === 'edge-inference').length,
+  },
+];
 ---
-<BaseLayout title="Home"><div class="card" style="margin-bottom:2rem"><strong>Preview site</strong> — Sample content for demonstration.</div><h1>AI Research Digests by Specialty</h1><p>Stay current with what matters in your domain. No hype, no paywalls—just curated research summaries.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-top:2rem">{verticals.map(v => <a class="card" href={`/verticals/${v.slug}`}><h2>{v.title}</h2><p>{v.description}</p><span>{digests.filter(d => d.data.vertical === v.slug).length} articles</span></a>)}</div></BaseLayout>
+
+<BaseLayout title="Home">
+  <div class="preview-banner">
+    <strong>Preview site</strong> — Sample content for demonstration. Verticals and articles are placeholders.
+  </div>
+
+  <section>
+    <h1>AI Research Digests by Specialty</h1>
+    <p style="font-size: 1.1rem; color: var(--color-text-muted); margin-bottom: var(--spacing-xl);">
+      Stay current with what matters in your domain. No hype, no paywalls—just curated research summaries supported by unobtrusive ads.
+    </p>
+
+    <div class="verticals-grid">
+      {verticals.map(vertical => (
+        <a href={`${base}verticals/${vertical.slug}`} class="vertical-card">
+          <h2>{vertical.title}</h2>
+          <p>{vertical.description}</p>
+          <span class="article-count">{vertical.count} {vertical.count === 1 ? 'article' : 'articles'}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .verticals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+  }
+  .vertical-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: var(--spacing-md);
+    transition: all 0.2s ease;
+    display: block;
+    text-decoration: none;
+  }
+  .vertical-card:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    text-decoration: none;
+  }
+  .vertical-card h2 { color: var(--color-text); margin-bottom: var(--spacing-sm); font-size: 1.25rem; }
+  .vertical-card p { color: var(--color-text-muted); margin-bottom: var(--spacing-md); line-height: 1.5; }
+  .article-count {
+    display: inline-block; font-size: 0.85rem; color: var(--color-accent);
+    border: 1px solid var(--color-accent); padding: 0.25rem 0.5rem; border-radius: 4px;
+  }
+</style>
