@@ -1,0 +1,7 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+export async function getStaticPaths() { const all = await getCollection('digests'); return all.map(d => ({ params:{slug:d.id}, props:{digest:d} })); }
+const { digest } = Astro.props; const { Content } = await render(digest);
+---
+<BaseLayout title={digest.data.title} description={digest.data.summary}><article><p><a href="/">Home</a> / {digest.data.vertical}</p><h1>{digest.data.title}</h1><time>{digest.data.date.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</time><section class="card" style="margin:2rem 0"><h2>What Matters</h2><p>{digest.data.summary}</p></section><h2>Key Takeaways</h2><ul>{digest.data.takeaways.map(t => <li>{t}</li>)}</ul><div><Content /></div><h2>Sources</h2><ul>{digest.data.sources.map(s => <li>[{s.type}] <a href={s.url}>{s.title}</a></li>)}</ul></article></BaseLayout>

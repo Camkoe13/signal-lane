@@ -1,0 +1,9 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+const all = await getCollection('digests');
+const definitions = { 'anomaly-detection': ['Industrial Visual Anomaly Detection','Research on real-time defect detection and edge deployment.'], 'agentic-security':['Agentic LLM / Tool-Use Security','Security research covering prompt injection and tool-use vulnerabilities.'], 'edge-inference':['On-Device / Edge LLM Inference','Advances in quantization, federated learning, and private edge AI.'] };
+export function getStaticPaths() { return Object.keys(definitions).map(vertical => ({ params:{vertical}, props:{vertical} })); }
+const { vertical } = Astro.props; const [title, description] = definitions[vertical]; const digests = all.filter(d => d.data.vertical === vertical).sort((a,b)=>b.data.date.valueOf()-a.data.date.valueOf());
+---
+<BaseLayout title={title}><h1>{title}</h1><p>{description}</p>{digests.map(d => <article class="card" style="margin:1rem 0"><h2><a href={`/digests/${d.id}`}>{d.data.title}</a></h2><time>{d.data.date.toLocaleDateString()}</time><p>{d.data.summary}</p><a href={`/digests/${d.id}`}>Read full digest →</a></article>)}</BaseLayout>

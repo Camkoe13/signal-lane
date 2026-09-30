@@ -1,0 +1,7 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+const digests = await getCollection('digests');
+const verticals = [{slug:'anomaly-detection',title:'Industrial Visual Anomaly Detection',description:'Real-time defect detection and edge deployment for manufacturing quality control.'},{slug:'agentic-security',title:'Agentic LLM / Tool-Use Security',description:'Prompt injection defenses, sandbox escapes, and security patterns for LLM agents.'},{slug:'edge-inference',title:'On-Device / Edge LLM Inference',description:'Quantization, federated learning, and private AI running on constrained hardware.'}];
+---
+<BaseLayout title="Home"><div class="card" style="margin-bottom:2rem"><strong>Preview site</strong> — Sample content for demonstration.</div><h1>AI Research Digests by Specialty</h1><p>Stay current with what matters in your domain. No hype, no paywalls—just curated research summaries.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-top:2rem">{verticals.map(v => <a class="card" href={`/verticals/${v.slug}`}><h2>{v.title}</h2><p>{v.description}</p><span>{digests.filter(d => d.data.vertical === v.slug).length} articles</span></a>)}</div></BaseLayout>
